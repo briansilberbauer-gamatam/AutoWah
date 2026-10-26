@@ -186,7 +186,9 @@ jobs:
 
   macos-universal:
     name: macOS Universal
-    runs-on: macos-14
+    # macos-14 is being retired (brownouts from Oct 2026); macos-15 still builds
+    # a universal arm64 + x86_64 binary from its Xcode toolchain.
+    runs-on: macos-15
     timeout-minutes: 45
 
     steps:
