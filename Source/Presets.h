@@ -23,6 +23,7 @@ struct FactoryPreset
     float lfoDepth;
     float mix;
     float output;
+    float inputDb = 0.0f;
 };
 
 inline constexpr int numFactoryPresets = 10;

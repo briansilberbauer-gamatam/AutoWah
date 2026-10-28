@@ -34,9 +34,12 @@ jumping.
   **Resonance** up to Q 14.
 - Log-domain cutoff smoothing, resonance makeup, valve-like peak control and a
   zero-latency bypass crossfade.
+- Mix, input trim, output level and a zero-latency bypass crossfade.
 - 10 factory presets split across both control sources.
 - Gunmetal/glass studio-hardware UI with a live filter-response screen, audio
   waveform, moving cutoff cursor and scrolling modulation history.
+- Full-height right-side mixer bay: Input, Wet/Dry Mix and Output faders with a
+  horizontal stereo Output meter (L/R bars, dB scale and peak hold) beneath them.
 - Lock-free telemetry: audio waveform and modulation data reach the UI without
   locks, allocations or audio-thread work on the message thread.
 
@@ -71,6 +74,7 @@ updated at a 6 kHz control rate for zipper-free sweeps at any buffer size.
 | `lfoRate` | LFO Rate | 0.05 – 12 Hz | Free-running LFO frequency |
 | `lfoDepth` | LFO Depth | 0 – 100 % | LFO sweep scaling |
 | `lfoShape` | LFO Shape | Sine / Triangle / Square / Saw | Shape selector |
+| `input` | Input | ‑24 – +24 dB | Input trim into the detector and filter |
 | `mix` | Mix | 0 – 100 % | Dry/wet blend |
 | `output` | Output | ‑24 – +12 dB | Output trim |
 | `bypass` | Bypass | Off / On | Zero-latency dry crossfade |
@@ -117,11 +121,12 @@ xvfb-run -a "./build/AutoWahScreenshot_artefacts/Release/Auto-Wah Screenshot" --
 ```
 
 The offline suite covers the SVF stability, envelope ballistics, sensitivity,
-LFO shapes and depth, bandpass/lowpass attenuation, live mode switching, exact
-bypass, waveform telemetry, mono/stereo/high-sample-rate processing, factory
-presets and full state round-trips. The host smoke test instantiates the built
-VST3 in JUCE's VST3 host, verifies all 14 parameters and 10 programs, exercises
-the control-source switch and round-trips state through the host.
+input trim, LFO shapes and depth, bandpass/lowpass attenuation, live mode
+switching, exact bypass, waveform telemetry, mono/stereo/high-sample-rate
+processing, factory presets and full state round-trips. The host smoke test
+instantiates the built VST3 in JUCE's VST3 host, verifies all 15 parameters and
+10 programs, exercises the control-source switch and round-trips state through
+the host.
 
 ## Architecture
 

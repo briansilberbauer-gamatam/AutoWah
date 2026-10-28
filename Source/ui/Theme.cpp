@@ -197,6 +197,52 @@ void drawGlassWell (juce::Graphics& g, juce::Rectangle<float> bounds, float corn
     g.drawRoundedRectangle (bounds.reduced (1.4f), juce::jmax (1.0f, corner - 1.2f), 0.7f);
 }
 
+void drawMixerBay (juce::Graphics& g, juce::Rectangle<float> bayBounds)
+{
+    constexpr float corner = 7.0f;
+
+    // Smoked glass recess that runs the full interior height of the unit.
+    juce::ColourGradient bayGradient (obsidianScreen.withAlpha (0.34f), bayBounds.getTopLeft(),
+                                      obsidianScreen.withAlpha (0.20f), bayBounds.getBottomRight(),
+                                      false);
+    g.setGradientFill (bayGradient);
+    g.fillRoundedRectangle (bayBounds, corner);
+
+    // Thin polished glass rim with a faint crimson inner refraction.
+    g.setColour (glassRimHighlight.withAlpha (0.14f));
+    g.drawRoundedRectangle (bayBounds, corner, 0.9f);
+    g.setColour (crimsonAccent.withAlpha (0.22f));
+    g.drawRoundedRectangle (bayBounds.reduced (1.4f), corner - 1.2f, 0.7f);
+
+    // Full-height divider hairline between the main workspace and the mixer bay.
+    const float dividerX = bayBounds.getX() - 7.0f;
+    g.setColour (obsidianGrid);
+    g.fillRect (dividerX, bayBounds.getY() + 6.0f, 1.0f, bayBounds.getHeight() - 12.0f);
+
+    juce::ColourGradient dividerGlow (juce::Colours::transparentBlack, dividerX, bayBounds.getY(),
+                                      juce::Colours::transparentBlack, dividerX, bayBounds.getBottom(),
+                                      false);
+    dividerGlow.addColour (0.5, crimsonAccent.withAlpha (0.34f));
+    g.setGradientFill (dividerGlow);
+    g.fillRect (dividerX + 1.0f, bayBounds.getY() + 14.0f, 1.0f, bayBounds.getHeight() - 28.0f);
+
+    // Column separation hairlines, fading out toward the top and bottom.
+    const float columnTop = bayBounds.getY() + 24.0f;
+    const float columnBottom = bayBounds.getBottom() - 96.0f;
+
+    for (int column = 1; column < 3; ++column)
+    {
+        const float x = bayBounds.getX() + bayBounds.getWidth()
+                        * static_cast<float> (column) / 3.0f;
+        juce::ColourGradient columnGradient (juce::Colours::transparentBlack, x, columnTop,
+                                             juce::Colours::transparentBlack, x, columnBottom,
+                                             false);
+        columnGradient.addColour (0.5, obsidianGrid.brighter (0.10f));
+        g.setGradientFill (columnGradient);
+        g.fillRect (x, columnTop, 0.7f, juce::jmax (10.0f, columnBottom - columnTop));
+    }
+}
+
 void drawSignalChip (juce::Graphics& g, juce::Rectangle<float> bounds, const juce::String& text)
 {
     g.setColour (obsidianScreen.withAlpha (0.92f));

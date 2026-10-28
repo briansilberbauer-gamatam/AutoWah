@@ -54,6 +54,10 @@ namespace studio::ui
     // Recessed obsidian mounting well with a faint glass rim.
     void drawGlassWell (juce::Graphics&, juce::Rectangle<float> bounds, float corner);
 
+    // Smoked-glass recess that houses the full-height right-side mixer bay:
+    // Input / Mix / Output faders with the horizontal Output meter beneath them.
+    void drawMixerBay (juce::Graphics&, juce::Rectangle<float> bayBounds);
+
     // Black signal-path chip used in the footer bus diagram.
     void drawSignalChip (juce::Graphics&, juce::Rectangle<float> bounds, const juce::String& text);
 

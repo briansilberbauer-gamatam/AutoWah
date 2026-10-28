@@ -12,7 +12,7 @@ class AutoWahRenderApplication final : public juce::JUCEApplication,
 {
 public:
     const juce::String getApplicationName() override { return "Auto-Wah Screenshot"; }
-    const juce::String getApplicationVersion() override { return "1.0.0"; }
+    const juce::String getApplicationVersion() override { return "1.1.0"; }
     bool moreThanOneInstanceAllowed() override { return true; }
     void anotherInstanceStarted (const juce::String&) override {}
     void systemRequestedQuit() override {}

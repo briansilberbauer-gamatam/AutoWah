@@ -16,6 +16,7 @@ namespace autowah::params
     inline constexpr const char* release      = "release";
     inline constexpr const char* lfoRate      = "lfoRate";
     inline constexpr const char* lfoDepth     = "lfoDepth";
+    inline constexpr const char* input        = "input";
     inline constexpr const char* mix          = "mix";
     inline constexpr const char* output       = "output";
     inline constexpr const char* bypass       = "bypass";
@@ -24,7 +25,7 @@ namespace autowah::params
     enum class FilterType { bandpass = 0, lowpass = 1 };
     enum class LfoShape { sine = 0, triangle = 1, square = 2, saw = 3 };
 
-    inline constexpr int numParameters = 14;
+    inline constexpr int numParameters = 15;
 
     inline juce::String formatHz (float value)
     {
@@ -177,7 +178,13 @@ namespace autowah::params
 
         choiceParameter (lfoShape, "LFO Shape", lfoShapeChoices(), 0, "LFO");
 
-        // --- Output ---
+        // --- Mixer bay: input trim, wet/dry blend and output level ---
+        floatParameter (input, "Input",
+                        juce::NormalisableRange<float> { -24.0f, 24.0f, 0.1f }, 0.0f,
+                        [] (float v, int) { return formatDb (v); },
+                        [] (const juce::String& t) { return t.getFloatValue(); },
+                        "Mixer");
+
         floatParameter (mix, "Mix", juce::NormalisableRange<float> { 0.0f, 100.0f, 0.1f }, 100.0f,
                         [] (float v, int) { return formatPercent (v); },
                         [] (const juce::String& t) { return t.getFloatValue(); },

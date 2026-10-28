@@ -92,6 +92,7 @@ private:
     std::atomic<float>* releaseParam = nullptr;
     std::atomic<float>* lfoRateParam = nullptr;
     std::atomic<float>* lfoDepthParam = nullptr;
+    std::atomic<float>* inputParam = nullptr;
     std::atomic<float>* mixParam = nullptr;
     std::atomic<float>* outputParam = nullptr;
     std::atomic<float>* bypassParam = nullptr;

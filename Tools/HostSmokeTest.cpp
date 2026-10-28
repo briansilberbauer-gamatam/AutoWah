@@ -100,8 +100,8 @@ int main (int argc, char** argv)
     for (auto* parameter : instance->getParameters())
         std::cout << "  INFO    " << parameterIndex++ << "  " << parameter->getName (48) << "\n";
 
-    check (instance->getParameters().size() >= 14,
-           "all 14 user parameters are exposed to the host");
+    check (instance->getParameters().size() >= 15,
+           "all 15 user parameters are exposed to the host");
     check (instance->getNumPrograms() == 10,
            "all ten factory programs are exposed to the host");
 

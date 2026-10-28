@@ -45,8 +45,10 @@ public:
             addAndMakeVisible (*knob);
         }
 
+        inputSlider = std::make_unique<GlassSlider> (apvts, input, "INPUT", formatDb);
         mixSlider = std::make_unique<GlassSlider> (apvts, mix, "MIX", formatPercent);
         outputSlider = std::make_unique<GlassSlider> (apvts, output, "OUTPUT", formatDb);
+        addAndMakeVisible (*inputSlider);
         addAndMakeVisible (*mixSlider);
         addAndMakeVisible (*outputSlider);
 
@@ -109,15 +111,18 @@ public:
     void paint (juce::Graphics& g) override
     {
         drawDesktopHardwareChassis (g, getLocalBounds().toFloat());
+        drawMixerBay (g, mixerBayBounds);
 
         paintBrandHeader (g);
 
         g.setColour (obsidianGrid.withAlpha (0.90f));
-        g.fillRect (52.0f, 97.0f, 1076.0f, 1.0f);
+        g.fillRect (46.0f, 91.0f, 870.0f, 1.0f);
 
-        drawEngravedLabel (g, { 52.0f, 102.0f, 244.0f, 26.0f },
+        drawEngravedLabel (g, { 46.0f, 97.0f, 232.0f, 26.0f },
                            "ENVELOPE DETECTOR", "PROGRAM-DEPENDENT SWEEP");
-        drawEngravedLabel (g, { 860.0f, 102.0f, 140.0f, 26.0f },
+        drawEngravedLabel (g, { 306.0f, 97.0f, 394.0f, 26.0f },
+                           "FILTER CORE", "LOG-SWEPT 12 dB STATE VARIABLE");
+        drawEngravedLabel (g, { 716.0f, 97.0f, 200.0f, 26.0f },
                            "LFO GENERATOR", "CYCLIC SWEEP");
 
         paintAnnotations (g);
@@ -126,38 +131,66 @@ public:
 
     void resized() override
     {
-        pillBar->setBounds (386, 44, 408, 36);
+        auto unitBounds = getLocalBounds().reduced (18, 16);
+        auto metalBase = unitBounds.reduced (5);
+        auto glassPanel = metalBase.reduced (6);
+        auto innerGlass = glassPanel.reduced (18, 16);
 
-        envelopeButton->setBounds (828, 48, 94, 30);
-        lfoButton->setBounds (930, 48, 94, 30);
-        bypassButton->setBounds (1032, 48, 96, 30);
+        // 1. Carve out the right-side mixer bay FIRST so it spans the full
+        //    interior height of the unit.
+        auto rightMixerBay = innerGlass.removeFromRight (204);
+        mixerBayBounds = rightMixerBay.toFloat();
+        innerGlass.removeFromRight (14);
 
-        filterDisplay->setBounds (328, 110, 524, 320);
+        // 1a. Horizontal Output meter lives vertically BELOW the three faders.
+        auto outputMeterArea = rightMixerBay.removeFromBottom (72);
+        outputMeter->setBounds (outputMeterArea.reduced (6, 4));
 
-        sensitivityKnob->setBounds (54, 128, 240, 200);
-        attackKnob->setBounds (62, 342, 108, 128);
-        releaseKnob->setBounds (178, 342, 108, 128);
-        modulationMeter->setBounds (60, 478, 228, 68);
+        rightMixerBay.removeFromBottom (8);
 
-        startKnob->setBounds (324, 442, 150, 124);
-        sweepKnob->setBounds (482, 442, 150, 124);
-        resonanceKnob->setBounds (640, 442, 150, 124);
+        // 1b. Three vertical mixer columns: Input, Wet/Dry Mix, Output.
+        const std::array<GlassSlider*, 3> mixerSliders { inputSlider.get(),
+                                                         mixSlider.get(),
+                                                         outputSlider.get() };
+        const int columnWidth = rightMixerBay.getWidth() / 3;
 
-        bandpassButton->setBounds (798, 460, 54, 26);
-        lowpassButton->setBounds (798, 492, 54, 26);
+        for (size_t i = 0; i < mixerSliders.size(); ++i)
+        {
+            auto column = rightMixerBay.removeFromLeft (i == mixerSliders.size() - 1
+                                                            ? rightMixerBay.getWidth()
+                                                            : columnWidth);
+            mixerSliders[i]->setBounds (column.reduced (2, 2));
+        }
 
-        rateKnob->setBounds (860, 128, 140, 156);
-        depthKnob->setBounds (860, 294, 140, 140);
+        // 2. Left / main workspace: header pill, filter screen, knobs & buttons.
+        auto topRow = innerGlass.removeFromTop (38);
+        pillBar->setBounds (topRow.withSizeKeepingCentre (360, 32));
 
-        sineButton->setBounds (860, 458, 66, 28);
-        triangleButton->setBounds (934, 458, 66, 28);
-        squareButton->setBounds (860, 490, 66, 28);
-        sawButton->setBounds (934, 490, 66, 28);
+        envelopeButton->setBounds (702, 48, 64, 30);
+        lfoButton->setBounds (770, 48, 64, 30);
+        bypassButton->setBounds (838, 48, 78, 30);
 
-        mixSlider->setBounds (1008, 126, 58, 430);
-        outputSlider->setBounds (1070, 126, 58, 430);
+        filterDisplay->setBounds (306, 126, 394, 318);
 
-        outputMeter->setBounds (780, 608, 348, 42);
+        sensitivityKnob->setBounds (46, 122, 232, 200);
+        attackKnob->setBounds (52, 328, 104, 128);
+        releaseKnob->setBounds (168, 328, 104, 128);
+        modulationMeter->setBounds (52, 464, 220, 68);
+
+        startKnob->setBounds (306, 452, 130, 132);
+        sweepKnob->setBounds (438, 452, 130, 132);
+        resonanceKnob->setBounds (570, 452, 130, 132);
+
+        bandpassButton->setBounds (580, 96, 52, 24);
+        lowpassButton->setBounds (638, 96, 52, 24);
+
+        rateKnob->setBounds (726, 122, 160, 150);
+        depthKnob->setBounds (726, 276, 160, 140);
+
+        sineButton->setBounds (730, 442, 78, 28);
+        triangleButton->setBounds (814, 442, 78, 28);
+        squareButton->setBounds (730, 476, 78, 28);
+        sawButton->setBounds (814, 476, 78, 28);
     }
 
 private:
@@ -220,27 +253,27 @@ private:
     {
         g.setColour (textSecondary.withAlpha (0.85f));
         g.setFont (font (6.3f, Weight::semibold, 0.22f));
-        g.drawText ("BLS AUDIO  /  SERIES WAH", 52, 36, 320, 9,
+        g.drawText ("BLS AUDIO  /  SERIES WAH", 46, 36, 250, 9,
                     juce::Justification::centredLeft, false);
 
         g.setColour (textPrimary);
-        g.setFont (font (24.0f, Weight::black, 0.035f));
-        g.drawText ("AUTOWAH", 52, 44, 360, 32,
+        g.setFont (font (23.0f, Weight::black, 0.035f));
+        g.drawText ("AUTOWAH", 46, 44, 250, 32,
                     juce::Justification::centredLeft, false);
 
         g.setColour (textSecondary);
-        g.setFont (font (6.6f, Weight::regular, 0.14f));
+        g.setFont (font (6.4f, Weight::regular, 0.12f));
         g.drawText ("DUAL-SOURCE DYNAMIC FILTER  /  ENVELOPE + LFO",
-                    52, 78, 380, 9, juce::Justification::centredLeft, false);
+                    46, 78, 250, 9, juce::Justification::centredLeft, false);
 
         g.setColour (crimsonAccent);
-        g.fillRect (52.0f, 90.0f, 54.0f, 1.4f);
+        g.fillRect (46.0f, 89.0f, 54.0f, 1.4f);
 
         // Control-source micro label above the mode selector.
         g.setColour (textMuted);
         g.setFont (font (5.8f, Weight::semibold, 0.18f));
-        g.drawText ("CONTROL SOURCE", 828, 34, 196, 9,
-                    juce::Justification::centred, false);
+        g.drawText ("CONTROL SOURCE", 702, 34, 214, 9,
+                    juce::Justification::centredRight, false);
     }
 
     void paintAnnotations (juce::Graphics& g)
@@ -249,66 +282,61 @@ private:
         g.setColour (textMuted);
 
         g.drawText ("SENSITIVITY DRIVES THE DETECTOR",
-                    54, 552, 244, 9, juce::Justification::centredLeft, false);
+                    46, 538, 232, 9, juce::Justification::centredLeft, false);
         g.drawText ("FAST ATTACK + LONG RELEASE = FUNK",
-                    54, 563, 244, 9, juce::Justification::centredLeft, false);
+                    46, 550, 232, 9, juce::Justification::centredLeft, false);
 
-        g.drawText ("FILTER TYPE", 798, 444, 54, 9,
-                    juce::Justification::centred, false);
+        g.setFont (font (5.6f, Weight::semibold, 0.15f));
+        g.drawText ("TYPE", 546, 102, 30, 10,
+                    juce::Justification::centredRight, false);
 
         g.setColour (textMuted);
         g.setFont (font (5.6f, Weight::semibold, 0.15f));
-        g.drawText ("SHAPE", 860, 440, 140, 10,
+        g.drawText ("SHAPE", 726, 426, 160, 10,
                     juce::Justification::centredLeft, false);
 
         g.setFont (font (5.7f, Weight::regular, 0.10f));
-        g.drawText ("FREE-RUNNING", 860, 530, 140, 9,
+        g.drawText ("FREE-RUNNING", 726, 512, 160, 9,
                     juce::Justification::centredLeft, false);
-        g.drawText ("RESETS ON MODE ENTRY", 860, 541, 140, 9,
+        g.drawText ("RESETS ON MODE ENTRY", 726, 524, 160, 9,
                     juce::Justification::centredLeft, false);
-
-        // Engraved note under the filter core.
-        g.setColour (textMuted.withAlpha (0.85f));
-        g.setFont (font (5.7f, Weight::regular, 0.10f));
-        g.drawText ("LOG-SWEPT 12 dB STATE VARIABLE FILTER",
-                    324, 570, 528, 9, juce::Justification::centredLeft, false);
     }
 
     void paintFooter (juce::Graphics& g)
     {
         g.setColour (obsidianGrid);
-        g.fillRect (52.0f, 598.0f, 1076.0f, 1.0f);
+        g.fillRect (46.0f, 596.0f, 870.0f, 1.0f);
 
         g.setColour (textMuted);
         g.setFont (font (6.2f, Weight::semibold, 0.16f));
-        g.drawText ("PRESET CHARACTER", 52, 606, 268, 9,
+        g.drawText ("PRESET CHARACTER", 46, 604, 250, 9,
                     juce::Justification::centredLeft, false);
 
         const int preset = processor.getCurrentPresetIndex();
         const bool dirty = processor.isPresetDirty();
 
         g.setColour (textSecondary);
-        g.setFont (font (7.4f, Weight::regular, 0.06f));
+        g.setFont (font (7.2f, Weight::regular, 0.05f));
         g.drawFittedText (autowah::getFactoryPresetCharacter (preset),
-                          juce::Rectangle<int> (52, 618, 268, 24),
+                          juce::Rectangle<int> (46, 616, 250, 24),
                           juce::Justification::centredLeft, 2);
 
-        drawCrimsonDot (g, { 55.0f, 660.0f }, 2.0f);
+        drawCrimsonDot (g, { 49.0f, 652.0f }, 2.0f);
 
         g.setColour (dirty ? crimsonBright : textMuted);
         g.setFont (font (6.2f, Weight::semibold, 0.14f));
         g.drawText (dirty ? "EDITED / UNSAVED" : "FACTORY / CLEAN",
-                    64, 655, 240, 9, juce::Justification::centredLeft, false);
+                    56, 647, 240, 9, juce::Justification::centredLeft, false);
 
         // Signal-path chips.
         const std::array<const char*, 4> stages { "DETECT", "SVF WAH", "BLEND", "OUT" };
-        float chipX = 338.0f;
+        float chipX = 306.0f;
         constexpr float chipWidth = 80.0f;
         constexpr float chipGap = 12.0f;
 
         for (size_t i = 0; i < stages.size(); ++i)
         {
-            const auto chip = juce::Rectangle<float> (chipX, 610.0f, chipWidth, 18.0f);
+            const auto chip = juce::Rectangle<float> (chipX, 608.0f, chipWidth, 18.0f);
             drawSignalChip (g, chip, stages[i]);
 
             if (i + 1 < stages.size())
@@ -326,14 +354,14 @@ private:
         g.setColour (textMuted);
         g.setFont (font (5.8f, Weight::semibold, 0.12f));
         g.drawText ("ENVELOPE / LFO DUAL CONTROL SOURCE  //  LINKED STEREO DETECTOR",
-                    338, 636, 420, 9, juce::Justification::centredLeft, false);
+                    306, 634, 356, 9, juce::Justification::centredLeft, false);
         g.drawText ("ZERO-LATENCY BYPASS  //  ANALOGUE-MODEL SVF",
-                    338, 648, 420, 9, juce::Justification::centredLeft, false);
+                    306, 646, 356, 9, juce::Justification::centredLeft, false);
 
         g.setColour (textSecondary);
         g.setFont (font (6.2f, Weight::semibold, 0.16f));
         g.drawText ("BLS AUDIO  /  VST3  /  64-BIT FLOAT",
-                    780, 656, 348, 9, juce::Justification::centredRight, false);
+                    670, 652, 246, 9, juce::Justification::centredRight, false);
     }
 
     AutoWahAudioProcessor& processor;
@@ -348,6 +376,7 @@ private:
     std::unique_ptr<ParamKnob> rateKnob;
     std::unique_ptr<ParamKnob> depthKnob;
 
+    std::unique_ptr<GlassSlider> inputSlider;
     std::unique_ptr<GlassSlider> mixSlider;
     std::unique_ptr<GlassSlider> outputSlider;
 
@@ -365,6 +394,7 @@ private:
     std::unique_ptr<ModulationMeter> modulationMeter;
     std::unique_ptr<OutputMeter> outputMeter;
     std::unique_ptr<HeaderPillBar> pillBar;
+    juce::Rectangle<float> mixerBayBounds;
 
     bool lastBypassed = false;
     int lastPreset = 0;

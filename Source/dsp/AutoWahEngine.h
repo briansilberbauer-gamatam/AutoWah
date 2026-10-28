@@ -209,6 +209,7 @@ public:
         float lfoDepth = 1.0f;
         float mix = 1.0f;
         float outputDb = 0.0f;
+        float inputDb = 0.0f;
         bool bypass = false;
     };
 
@@ -241,6 +242,7 @@ public:
         bypassMix = parameters.bypass ? 1.0f : 0.0f;
         mixCurrent = std::clamp (parameters.mix, 0.0f, 1.0f);
         outputGainCurrent = decibelsToGain (parameters.outputDb);
+        inputGainCurrent = decibelsToGain (parameters.inputDb);
         logCutoff = std::log2 (std::clamp (parameters.startHz, 20.0f, 20000.0f));
         lastControl = 0.0f;
         cutoffHz = parameters.startHz;
@@ -272,6 +274,7 @@ public:
 
         logStart = std::log2 (parameters.startHz);
         sensitivityGain = decibelsToGain (parameters.sensitivityDb);
+        targetInputGain = decibelsToGain (parameters.inputDb);
         targetOutputGain = decibelsToGain (parameters.outputDb);
 
         envelope.setTimes (parameters.attackMs, parameters.releaseMs);
@@ -292,8 +295,10 @@ public:
 
         for (int i = 0; i < numSamples; ++i)
         {
-            const float dryLeft = left[i];
-            const float dryRight = stereo ? right[i] : dryLeft;
+            const float rawLeft = left[i];
+            const float rawRight = stereo ? right[i] : rawLeft;
+            const float dryLeft = rawLeft * inputGainCurrent;
+            const float dryRight = rawRight * inputGainCurrent;
 
             blockInputPeak = std::max (blockInputPeak,
                                        std::max (std::abs (dryLeft), std::abs (dryRight)));
@@ -329,6 +334,7 @@ public:
                 currentQ += qGlide * (parameters.resonance - currentQ);
                 typeMix += typeGlide * ((parameters.filterType == 0 ? 0.0f : 1.0f) - typeMix);
                 mixCurrent += mixGlide * (parameters.mix - mixCurrent);
+                inputGainCurrent += gainGlide * (targetInputGain - inputGainCurrent);
                 outputGainCurrent += gainGlide * (targetOutputGain - outputGainCurrent);
                 bypassMix += bypassGlide * ((parameters.bypass ? 1.0f : 0.0f) - bypassMix);
 
@@ -357,8 +363,8 @@ public:
             float outLeft = (dryLeft * (1.0f - mixCurrent) + wetLeft * mixCurrent) * outputGainCurrent;
             float outRight = (dryRight * (1.0f - mixCurrent) + wetRight * mixCurrent) * outputGainCurrent;
 
-            outLeft = outLeft * (1.0f - bypassMix) + dryLeft * bypassMix;
-            outRight = outRight * (1.0f - bypassMix) + dryRight * bypassMix;
+            outLeft = outLeft * (1.0f - bypassMix) + rawLeft * bypassMix;
+            outRight = outRight * (1.0f - bypassMix) + rawRight * bypassMix;
 
             left[i] = outLeft;
 
@@ -403,6 +409,8 @@ private:
     TptSvf filterRight;
 
     float sensitivityGain = 2.0f;
+    float targetInputGain = 1.0f;
+    float inputGainCurrent = 1.0f;
     float targetOutputGain = 1.0f;
     float outputGainCurrent = 1.0f;
     float mixCurrent = 1.0f;

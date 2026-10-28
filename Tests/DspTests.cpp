@@ -308,6 +308,33 @@ void testFilterAttenuation()
            "lowpass tap passes lows and rejects highs");
 }
 
+void testInputTrim()
+{
+    autowah::dsp::WahEngine engine;
+    engine.prepare (48000.0);
+
+    // With the blend fully dry the input trim is a pure gain stage, so +12 dB
+    // must deliver four times the amplitude of unity trim.
+    auto parameters = baseParameters();
+    parameters.mix = 0.0f;
+    parameters.inputDb = 0.0f;
+    engine.setParameters (parameters);
+
+    juce::int64 counter = 0;
+    renderTone (engine, 48000.0, 440.0f, 0.1f, 0.25f, counter);
+    const auto unity = renderTone (engine, 48000.0, 440.0f, 0.1f, 0.25f, counter);
+
+    parameters.inputDb = 12.0f;
+    engine.setParameters (parameters);
+    renderTone (engine, 48000.0, 440.0f, 0.1f, 0.25f, counter);
+    const auto boosted = renderTone (engine, 48000.0, 440.0f, 0.1f, 0.25f, counter);
+
+    check (boosted.rms > unity.rms * 3.6f && boosted.rms < unity.rms * 4.4f,
+           "input trim applies a calibrated gain to the dry path");
+    check (std::isfinite (boosted.rms) && boosted.rms > 0.0f,
+           "input trim stays finite and audible");
+}
+
 void testModeSwitchAndBypass()
 {
     autowah::dsp::WahEngine engine;
@@ -363,7 +390,7 @@ void testProcessor()
     AutoWahAudioProcessor processor;
 
     check (processor.getParameters().size() == autowah::params::numParameters,
-           "processor exposes all 14 parameters");
+           "processor exposes all 15 parameters");
     check (processor.getNumPrograms() == autowah::numFactoryPresets,
            "ten factory programs are available");
     check (processor.getCurrentProgram() == 0, "processor starts on the first factory program");
@@ -376,8 +403,9 @@ void testProcessor()
                             autowah::params::sweep, autowah::params::resonance,
                             autowah::params::sensitivity, autowah::params::attack,
                             autowah::params::release, autowah::params::lfoRate,
-                            autowah::params::lfoDepth, autowah::params::mix,
-                            autowah::params::output, autowah::params::bypass })
+                            autowah::params::lfoDepth, autowah::params::input,
+                            autowah::params::mix, autowah::params::output,
+                            autowah::params::bypass })
     {
         auto* parameter = processor.getValueTreeState().getParameter (id);
         allParametersValid = allParametersValid && parameter != nullptr
@@ -583,6 +611,7 @@ int main()
     testEnvelopeMode();
     testLfoMode();
     testFilterAttenuation();
+    testInputTrim();
     testModeSwitchAndBypass();
     testProcessor();
     testPresets();

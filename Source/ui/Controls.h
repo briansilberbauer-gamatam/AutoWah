@@ -196,9 +196,6 @@ namespace studio::ui
 
     private:
         void timerCallback() override;
-        void drawChannel (juce::Graphics&, juce::Rectangle<float> bounds,
-                          const juce::String& label, float normalisedLevel,
-                          float normalisedPeak) const;
 
         AutoWahAudioProcessor& processor;
         float levelLeft = 0.0f;

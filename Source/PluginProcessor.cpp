@@ -24,6 +24,7 @@ AutoWahAudioProcessor::AutoWahAudioProcessor()
     releaseParam     = apvts.getRawParameterValue (release);
     lfoRateParam     = apvts.getRawParameterValue (lfoRate);
     lfoDepthParam    = apvts.getRawParameterValue (lfoDepth);
+    inputParam       = apvts.getRawParameterValue (input);
     mixParam         = apvts.getRawParameterValue (mix);
     outputParam      = apvts.getRawParameterValue (output);
     bypassParam      = apvts.getRawParameterValue (bypass);
@@ -85,6 +86,7 @@ void AutoWahAudioProcessor::updateParametersFromState() noexcept
     parameters.releaseMs = releaseParam->load();
     parameters.lfoRateHz = lfoRateParam->load();
     parameters.lfoDepth = lfoDepthParam->load() * 0.01f;
+    parameters.inputDb = inputParam->load();
     parameters.mix = mixParam->load() * 0.01f;
     parameters.outputDb = outputParam->load();
     parameters.bypass = bypassParam->load() > 0.5f;
@@ -198,6 +200,7 @@ void AutoWahAudioProcessor::applyPreset (int index)
     setValue (release, preset.release);
     setValue (lfoRate, preset.lfoRate);
     setValue (lfoDepth, preset.lfoDepth);
+    setValue (input, preset.inputDb);
     setValue (mix, preset.mix);
     setValue (output, preset.output);
     setValue (bypass, 0.0f);

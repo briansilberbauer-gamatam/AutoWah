@@ -153,7 +153,7 @@ void StudioLookAndFeel::drawLinearSlider (juce::Graphics& g, int x, int y, int w
     const float clampedY = juce::jlimit (trackTop, trackBot, sliderPos);
 
     // 1. Minimalist horizontal tick marks alongside both sides of the track.
-    constexpr int numTicks = 11;
+    constexpr int numTicks = 21;
     for (int i = 0; i < numTicks; ++i)
     {
         const float prop  = static_cast<float> (i) / static_cast<float> (numTicks - 1);
@@ -186,7 +186,7 @@ void StudioLookAndFeel::drawLinearSlider (juce::Graphics& g, int x, int y, int w
     }
 
     // 4. Low-profile flush machined fader cap.
-    const juce::Rectangle<float> thumb (centerX - 11.0f, clampedY - 4.5f, 22.0f, 9.0f);
+    const juce::Rectangle<float> thumb (centerX - 12.0f, clampedY - 4.5f, 24.0f, 9.0f);
     g.setColour (dropShadowDeep.withAlpha (0.55f));
     g.fillRoundedRectangle (thumb.translated (0.8f, 1.4f), 2.0f);
 

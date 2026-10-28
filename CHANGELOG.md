@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.0 — 2026-10-28
+
+### Added
+
+- Input trim parameter (`input`, ‑24 – +24 dB) ahead of the detector and filter,
+  wired into factory presets, host automation, state and the DSP test suite.
+- Right-side full-height mixer bay housing the Input, Wet/Dry Mix and Output
+  faders, with a horizontal stereo `OUT METER` (L/R bars, dB scale, peak hold and
+  tabular peak readout) vertically below the faders.
+- Mixer-bay separator hairline with a subtle crimson edge refraction.
+
+### Changed
+
+- Rebalanced the 1180x720 layout around the new full-height mixer bay, moving
+  the filter-type selector up beside the filter-core header and tightening the
+  LFO and footer sections.
+
 ## 1.0.0 — 2026-10-26
 
 ### Added
